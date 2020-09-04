@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 const _ = require("lodash");
+const jsonwebtoken = require("jsonwebtoken");
 
 const userSchema = mongoose.Schema({
   first_name: {
@@ -44,12 +45,14 @@ const userSchema = mongoose.Schema({
 userSchema.methods.toResult = function () {
   return _.pick(this, ["_id", "first_name", "last_name", "username", "email"]);
 };
+userSchema.methods.createJwtToken = function () {
+  return jsonwebtoken.sign({ _id: this._id }, "123123123");
+};
 
 const User = mongoose.model("User", userSchema);
 
 function validateCreate(user) {
   return new Joi.object({
-    _id: Joi.objectId(),
     first_name: Joi.string().min(3).max(100).required(),
     last_name: Joi.string().min(3).max(100),
     username: Joi.string().min(3).max(100).required(),

@@ -1,28 +1,29 @@
 const express = require("express");
 const _ = require("lodash");
-
 const router = express.Router();
 const bcrypt = require("bcrypt");
+
 const {
   User,
   validateCreate,
   validateUpdate,
   validateChangePassword,
 } = require("../models/user");
+const auth = require("../middlewares/auth");
 
-router.get("/", async (req, res) => {
+router.get("/", [auth], async (req, res) => {
   const users = await User.find();
   res.send(_.map(users, (user) => user.toResult()));
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", [auth], async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) res.status(404).send("User id not valid");
 
   res.send(user.toResult());
 });
 
-router.post("/", async (req, res) => {
+router.post("/", [auth], async (req, res) => {
   const { error } = validateCreate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -46,7 +47,7 @@ router.post("/", async (req, res) => {
   res.send(user.toResult());
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", [auth], async (req, res) => {
   const { error } = validateUpdate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -78,7 +79,7 @@ router.put("/:id", async (req, res) => {
   return res.send(user.toResult());
 });
 
-router.put("/update-password/:id", async (req, res) => {
+router.put("/update-password/:id", [auth], async (req, res) => {
   const { error } = validateChangePassword(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -100,7 +101,7 @@ router.put("/update-password/:id", async (req, res) => {
   return res.send(user.toResult());
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", [auth], async (req, res) => {
   const user = await User.findByIdAndDelete(req.params.id);
   if (!user) return res.status(404).send("User is not valid");
 
