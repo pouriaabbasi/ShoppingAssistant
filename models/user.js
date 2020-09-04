@@ -42,6 +42,10 @@ const userSchema = mongoose.Schema({
     trim: true,
   },
 });
+userSchema.statics.decode = function (token) {
+  const result = jsonwebtoken.decode(token.replace("Bearer ", ""));
+  return _.pick(result, ["_id"]);
+};
 userSchema.methods.toResult = function () {
   return _.pick(this, ["_id", "first_name", "last_name", "username", "email"]);
 };
