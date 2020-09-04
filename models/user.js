@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
+const _ = require("lodash");
 
 const userSchema = mongoose.Schema({
   first_name: {
@@ -40,21 +41,39 @@ const userSchema = mongoose.Schema({
     trim: true,
   },
 });
+userSchema.methods.toResult = function () {
+  return _.pick(this, ["_id", "first_name", "last_name", "username", "email"]);
+};
 
 const User = mongoose.model("User", userSchema);
 
-function validate(user) {
-  const userSchema = new Joi.object({
+function validateCreate(user) {
+  return new Joi.object({
     _id: Joi.objectId(),
     first_name: Joi.string().min(3).max(100).required(),
     last_name: Joi.string().min(3).max(100),
     username: Joi.string().min(3).max(100).required(),
     email: Joi.string().min(6).max(100).email().required(),
     password: Joi.string().min(1).max(256).required(),
-  });
-
-  return userSchema.validate(user);
+  }).validate(user);
+}
+function validateUpdate(user) {
+  return new Joi.object({
+    first_name: Joi.string().min(3).max(100).required(),
+    last_name: Joi.string().min(3).max(100),
+    username: Joi.string().min(3).max(100).required(),
+    email: Joi.string().min(6).max(100).email().required(),
+  }).validate(user);
+}
+function validateChangePassword(user) {
+  return new Joi.object({
+    current_password: Joi.string().required(),
+    new_password: Joi.string().min(1).max(256).required(),
+    confirm_password: Joi.string().min(1).max(256).required(),
+  }).validate(user);
 }
 
 module.exports.User = User;
-module.exports.validate = validate;
+module.exports.validateCreate = validateCreate;
+module.exports.validateUpdate = validateUpdate;
+module.exports.validateChangePassword = validateChangePassword;
