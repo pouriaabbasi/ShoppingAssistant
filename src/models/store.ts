@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
-const Joi = require("joi");
-const _ = require("lodash");
+import mongoose, { Document, Model, model } from "mongoose";
+import Joi, { ValidationResult } from "joi";
+import _ from "lodash";
 
-const storeSchema = mongoose.Schema({
+const storeSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -31,15 +31,23 @@ storeSchema.methods.toResult = function () {
   return _.pick(this, ["_id", "name", "address", "description"]);
 };
 
-const Store = mongoose.model("Store", storeSchema);
+export interface IStoreDocument extends Document {
+  user: mongoose.Schema.Types.ObjectId;
+  name: string;
+  address: string;
+  description: string;
+  toResult: () => any;
+}
 
-function validate(store) {
-  return new Joi.object({
+export const Store: Model<IStoreDocument> = model<IStoreDocument>(
+  "Store",
+  storeSchema
+);
+
+export function validateStore(store: any): ValidationResult {
+  return Joi.object({
     name: Joi.string().min(3).max(100).required(),
     address: Joi.string().min(10).max(500),
     description: Joi.string().min(3).max(500),
   }).validate(store);
 }
-
-module.exports.Store = Store;
-module.exports.validateStore = validate;

@@ -1,8 +1,8 @@
-const express = require("express");
-const _ = require("lodash");
-const auth = require("../middlewares/auth");
-const { User } = require("../models/user");
-const { Brand, validateBrand } = require("../models/brand");
+import express from "express";
+import _ from "lodash";
+import auth from "../middlewares/auth";
+import { User } from "../models/user";
+import { Brand, validateBrand } from "../models/brand";
 
 const router = express.Router();
 
@@ -67,4 +67,4 @@ router.delete("/:id", auth, async (req, res) => {
   return res.send(brand.toResult());
 });
 
-module.exports = router;
+export default router;

@@ -1,10 +1,11 @@
-const jsonwebtoken = require("jsonwebtoken");
+import jsonwebtoken from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
 
-module.exports = function (req, res, next) {
+function auth(req: Request, res: Response, next: NextFunction) {
   const jwtToken = req.header("authorization");
   if (!jwtToken)
     return res
-      .status("401")
+      .status(401)
       .send("You don't have allow to access this resource!");
 
   try {
@@ -14,4 +15,6 @@ module.exports = function (req, res, next) {
   }
 
   next();
-};
+}
+
+export default auth;

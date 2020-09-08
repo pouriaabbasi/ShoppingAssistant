@@ -1,7 +1,7 @@
-const express = require("express");
-const bcrypt = require("bcrypt");
-const Joi = require("joi");
-const { User, validateCreate } = require("../models/user");
+import express, { Response } from "express";
+import bcrypt from "bcrypt";
+import Joi from "joi";
+import { User, validateCreate } from "../models/user";
 
 const router = express.Router();
 
@@ -44,15 +44,15 @@ router.post("/login", async (req, res) => {
   return res.send(user.toResult());
 });
 
-function validateLogin(login) {
-  return new Joi.object({
+function validateLogin(login: any) {
+  return Joi.object({
     username: Joi.string().min(3).max(100).required(),
     password: Joi.string().min(3).max(100).required(),
   }).validate(login);
 }
 
-function setAuthorizationHeader(user, res) {
+function setAuthorizationHeader(user: any, res: Response) {
   res.header("authorization", `Bearer ${user.createJwtToken()}`);
 }
 
-module.exports = router;
+export default router;
