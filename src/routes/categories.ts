@@ -31,17 +31,57 @@ router.post("/", auth, async (req, res) => {
     name: req.body.name,
     brands: [],
   });
-  await category.save();
   const brands: Array<mongoose.Schema.Types.ObjectId> = req.body.brands;
-  await brands.forEach(async (brand) => {
-    const refBrand = await Brand.findById(brand);
+  for (let brandIndex = 0; brandIndex < brands.length; brandIndex++) {
+    const brandId = brands[brandIndex];
+    if (category.brands.find((x) => x.brand == brandId)) continue;
+    const refBrand = await Brand.findById(brandId);
     if (!refBrand) return res.status(404).send("Brand is not valid");
     category.brands.push({
       brand: refBrand._id,
       name: refBrand.name,
     });
-    await category.save();
+  }
+
+  await category.save();
+  return res.send(category.toResult());
+});
+
+router.put("/:id", auth, async (req, res) => {
+  const user = User.decode(req.header("authorization"));
+  const category = await Category.findOne({
+    _id: req.params.id,
+    user: user._id,
   });
+  if (!category) return res.status(404).send("Category is not valid");
+
+  category.name = req.body.name;
+  category.brands = [];
+  const brands: Array<mongoose.Schema.Types.ObjectId> = req.body.brands;
+  if (brands)
+    for (let brandIndex = 0; brandIndex < brands.length; brandIndex++) {
+      const brandId = brands[brandIndex];
+      if (category.brands.find((x) => x.brand == brandId)) continue;
+      const refBrand = await Brand.findById(brandId);
+      if (!refBrand) return res.status(404).send("Brand is not valid");
+      category.brands.push({
+        brand: refBrand._id,
+        name: refBrand.name,
+      });
+    }
+  await category.save();
+
+  return res.send(category.toResult());
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  const user = User.decode(req.header("authorization"));
+  const category = await Category.findOneAndDelete({
+    _id: req.params.id,
+    user: user._id,
+  });
+  if (!category) return res.status(404).send("Category is not valid");
+
   return res.send(category.toResult());
 });
 
