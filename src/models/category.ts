@@ -1,6 +1,9 @@
 import mongoose, { Document, Model, model } from "mongoose";
 import Joi from "joi";
 import _ from "lodash";
+const joiObjectId = require("joi-objectid");
+
+const objectId = joiObjectId(Joi);
 
 const categorySchema = new mongoose.Schema({
   user: {
@@ -18,9 +21,13 @@ const categorySchema = new mongoose.Schema({
     {
       brand: {
         type: mongoose.Schema.Types.ObjectId,
+        required: true,
         ref: "Brand",
       },
-      name: String,
+      name: {
+        type: String,
+        required: true,
+      },
     },
   ],
 });
@@ -39,3 +46,10 @@ export const Category: Model<ICategoryDocument> = model<ICategoryDocument>(
   "Category",
   categorySchema
 );
+
+export function validateCategory(category: any) {
+  return Joi.object({
+    name: Joi.string().min(3).max(100).required(),
+    brands: Joi.array().items(objectId().required()),
+  }).validate(category);
+}
